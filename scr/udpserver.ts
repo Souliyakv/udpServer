@@ -60,10 +60,18 @@ export class UDPSERVER {
             console.log(`logout`);
             break;
           case ECommand.send:
+            // this.arr.push(message.data['message'])
+            // console.log(this.arr.length);
+            
+            // const ack={'trans':message.trans,command:'ack'}
+            // server.send(JSON.stringify(ack));
+            server.send(JSON.stringify({
+              'command':'ack'
+            }),info.port,info.address)
 
 
-
-            console.log(`send`);
+            console.log(message.data['sumData']);
+            console.log(message.data['round'])
             const m = message.data as IMessage;
             // this.arr.push(m.message);
             const sender = message.token;
@@ -74,8 +82,8 @@ export class UDPSERVER {
               const recv = receivers.filter(v => v != sender);
               const s = this.userList.filter(v => recv.includes(v.u.userName));
               s.forEach(v => {
-                console.log('port: ',v.u.port);
-                console.log('port: ',v.u.address);
+                // console.log('port: ',v.u.port);
+                // console.log('port: ',v.u.address);
                 // console.log(`my arr: =========> ${JSON.stringify(this.arr)}`);
                 server.send(JSON.stringify(message.data), v.u.port,v.u.address, function (error) {
                   if (error) {
@@ -84,7 +92,7 @@ export class UDPSERVER {
 
                   } else {
                     ///
-                    console.log(message.data)
+                    // console.log(message.data)
                   }
 
                 });
@@ -132,8 +140,14 @@ export class UDPSERVER {
 
     //emits after the socket is closed using socket.close();
     server.on('close', function () {
-      console.log('Socket is closed !');
-      server.close();
+      try {
+        console.log('Socket is closed !');
+        server.close();
+      } catch (error) {
+        console.log(error);
+        
+      }
+     
     });
 
     server.bind(2222, '0.0.0.0', () => {
