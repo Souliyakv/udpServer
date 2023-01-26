@@ -46,7 +46,7 @@ export class UDPSERVER {
             const infoD = info as Info;
             const u = message.data as User;
 
-            const uData = { 
+            const uData = {
               userName: u.userName,
               password: u.password,
               port: infoD.port,
@@ -62,16 +62,13 @@ export class UDPSERVER {
           case ECommand.send:
             // this.arr.push(message.data['message'])
             // console.log(this.arr.length);
-            
+
             // const ack={'trans':message.trans,command:'ack'}
             // server.send(JSON.stringify(ack));
             server.send(JSON.stringify({
-              'command':'ack'
-            }),info.port,info.address)
+              'command': 'ack'
+            }), info.port, info.address)
 
-
-            console.log(message.data['sumData']);
-            console.log(message.data['round'])
             const m = message.data as IMessage;
             // this.arr.push(m.message);
             const sender = message.token;
@@ -81,18 +78,31 @@ export class UDPSERVER {
               const receivers = channel.members;
               const recv = receivers.filter(v => v != sender);
               const s = this.userList.filter(v => recv.includes(v.u.userName));
+
               s.forEach(v => {
                 // console.log('port: ',v.u.port);
                 // console.log('port: ',v.u.address);
                 // console.log(`my arr: =========> ${JSON.stringify(this.arr)}`);
-                server.send(JSON.stringify(message.data), v.u.port,v.u.address, function (error) {
+                // message.data
+                server.send(JSON.stringify({
+                  'message': message.data['message'],
+                  'channel': message.data['channel'],
+                  'type': message.data['type'],
+                  'total': message.data['total'],
+                  'round': message.data['round'],
+                  'sumData': message.data['sumData'],
+                  'address': info.address,
+                  'port': info.port
+                }), v.u.port, v.u.address, function (error) {
                   if (error) {
                     //   client.close();
                     console.log(`error`);
 
                   } else {
                     ///
-                    // console.log(message.data)
+                    console.log('total :' + message.data['total'])
+                    console.log('round :' + message.data['round'])
+
                   }
 
                 });
@@ -100,6 +110,44 @@ export class UDPSERVER {
 
             }
 
+            break;
+          case ECommand.refund:
+            console.log(message);
+            console.log(`refund`);
+            server.send(JSON.stringify({
+              'message': message.data['message'],
+              'channel': message.data['channel'],
+              'type': message.data['type'],
+              'total': message.data['total'],
+              'round': message.data['round'],
+              'sumData': message.data['sumData'],
+              'address': info.address,
+              'port': info.port,
+              'command': 'refund'
+            }), message.data['port'], message.data['address'])
+            break;
+
+
+          case ECommand.resend:
+            console.log(`resend`)
+            server.send(JSON.stringify({
+              'command': 'ackResend'
+            }), info.port, info.address)
+
+
+            console.log(message);
+            server.send(JSON.stringify({
+              'message': message.data['message'],
+              'channel': message.data['channel'],
+              'type': message.data['type'],
+              'total': message.data['total'],
+              'round': message.data['round'],
+              'index':message.data['index'],
+              'sumData': message.data['sumData'],
+              'address': info.address,
+              'port': info.port,
+              'command':'resend'
+            }), message.data['port'], message.data['address']);
             break;
           default:
             break;
@@ -145,9 +193,9 @@ export class UDPSERVER {
         server.close();
       } catch (error) {
         console.log(error);
-        
+
       }
-     
+
     });
 
     server.bind(2222, '0.0.0.0', () => {
@@ -156,7 +204,14 @@ export class UDPSERVER {
 
   }
 }
+//
+var ind = [0, 100000] /// 100.0000
 
+
+var ind2 = [ // 10.000
+  { r: [{ min: 0, max: 10000 }] },//==>{v:[1,3,7,9],r:[{min:100,max:200},{min:500,max:600}]}
+  { r: [{ min: 10001, max: 20000 }] },
+]
 
 //   setTimeout(function(){
 //   server.close();
